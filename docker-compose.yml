@@ -1,0 +1,20 @@
+services:
+  rtu:
+    build: .
+    container_name: rtu-iec104
+    ports:
+      - "8080:8080"   # HTTP API
+      - "2404:2404"   # IEC 104
+    volumes:
+      - ./data:/app/data  # Persist SQLite database
+    environment:
+      - RTU_ADDRESS=1
+      - IEC104_PORT=2404
+      - WEB_PORT=8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
