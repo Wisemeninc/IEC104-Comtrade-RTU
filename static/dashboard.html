@@ -304,38 +304,53 @@
                     Real-time system values (updates every 5 seconds)
                 </p>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
-                    <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
-                        <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Voltage Phase A</div>
-                        <div id="live-va" style="color: #3b82f6; font-size: 24px; font-weight: 700;">-- kV</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr) 1fr; gap: 15px;">
+                    <!-- Phase A Column -->
+                    <div>
+                        <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333; margin-bottom: 10px;">
+                            <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Voltage Phase A</div>
+                            <div id="live-va" style="color: #3b82f6; font-size: 24px; font-weight: 700;">-- kV</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
+                            <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Current Phase A</div>
+                            <div id="live-ia" style="color: #ef4444; font-size: 24px; font-weight: 700;">-- A</div>
+                        </div>
                     </div>
-                    <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
-                        <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Voltage Phase B</div>
-                        <div id="live-vb" style="color: #3b82f6; font-size: 24px; font-weight: 700;">-- kV</div>
+                    
+                    <!-- Phase B Column -->
+                    <div>
+                        <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333; margin-bottom: 10px;">
+                            <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Voltage Phase B</div>
+                            <div id="live-vb" style="color: #3b82f6; font-size: 24px; font-weight: 700;">-- kV</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
+                            <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Current Phase B</div>
+                            <div id="live-ib" style="color: #ef4444; font-size: 24px; font-weight: 700;">-- A</div>
+                        </div>
                     </div>
-                    <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
-                        <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Voltage Phase C</div>
-                        <div id="live-vc" style="color: #3b82f6; font-size: 24px; font-weight: 700;">-- kV</div>
+                    
+                    <!-- Phase C Column -->
+                    <div>
+                        <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333; margin-bottom: 10px;">
+                            <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Voltage Phase C</div>
+                            <div id="live-vc" style="color: #3b82f6; font-size: 24px; font-weight: 700;">-- kV</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
+                            <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Current Phase C</div>
+                            <div id="live-ic" style="color: #ef4444; font-size: 24px; font-weight: 700;">-- A</div>
+                        </div>
                     </div>
-                    <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
-                        <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Current Phase A</div>
-                        <div id="live-ia" style="color: #ef4444; font-size: 24px; font-weight: 700;">-- A</div>
-                    </div>
-                    <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
-                        <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Current Phase B</div>
-                        <div id="live-ib" style="color: #ef4444; font-size: 24px; font-weight: 700;">-- A</div>
-                    </div>
-                    <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
-                        <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Current Phase C</div>
-                        <div id="live-ic" style="color: #ef4444; font-size: 24px; font-weight: 700;">-- A</div>
-                    </div>
-                    <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
-                        <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Frequency</div>
-                        <div id="live-freq" style="color: #10b981; font-size: 24px; font-weight: 700;">-- Hz</div>
-                    </div>
-                    <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
-                        <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">System Status</div>
-                        <div id="live-status" style="color: #10b981; font-size: 24px; font-weight: 700;">NORMAL</div>
+                    
+                    <!-- Frequency & Status Column -->
+                    <div>
+                        <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333; margin-bottom: 10px;">
+                            <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">Frequency</div>
+                            <div id="live-freq" style="color: #10b981; font-size: 24px; font-weight: 700;">-- Hz</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: #262626; border-radius: 8px; border: 1px solid #333;">
+                            <div style="color: #9ca3af; font-size: 12px; margin-bottom: 5px;">System Status</div>
+                            <div id="live-status" style="color: #10b981; font-size: 24px; font-weight: 700;">NORMAL</div>
+                        </div>
                     </div>
                 </div>
             </div>

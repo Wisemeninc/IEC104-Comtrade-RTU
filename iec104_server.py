@@ -251,6 +251,7 @@ class IEC104Server:
             # Update status - fault is ACTIVE only during recording
             # If recording is not active, this is historical data and fault should be cleared
             is_recording = self.current_data.get(IOARange.COMTRADE_RECORDING_ACTIVE, False)
+            logger.info(f"update_tfr_data: RECORDING_ACTIVE={is_recording}, setting FAULT_ACTIVE={is_recording}")
             self.current_data[IOARange.FAULT_ACTIVE] = is_recording  # Active only during recording
             self.current_data[IOARange.BREAKER_POSITION] = 1  # OFF after trip
         
@@ -369,7 +370,9 @@ class IEC104Server:
             # Update internal state - recording started
             self.current_data[IOARange.COMTRADE_RECORDING_ACTIVE] = True
             self.current_data[IOARange.COMTRADE_RECORDER_READY] = False
-            # File ready stays false, TFR ID not updated yet
+            self.current_data[IOARange.COMTRADE_FILE_READY] = False  # Clear file ready - new recording in progress
+            logger.info(f"signal_comtrade_recording_start: Set RECORDING_ACTIVE=True, FILE_READY=False in current_data")
+            # TFR ID not updated yet - will be set when recording completes
         
         try:
             # Signal recording started (spontaneous)
@@ -384,7 +387,13 @@ class IEC104Server:
                 point.value = False
                 point.transmit(cause=c104.Cot.SPONTANEOUS)
             
-            logger.info(f"Signaled COMTRADE recording START for TFR {tfr_id} (IOA 1500=1, 1501=0)")
+            # Clear file ready - new recording in progress, old file no longer valid
+            point = self.station.get_point(IOARange.COMTRADE_FILE_READY)
+            if point:
+                point.value = False
+                point.transmit(cause=c104.Cot.SPONTANEOUS)
+            
+            logger.info(f"Signaled COMTRADE recording START for TFR {tfr_id} (IOA 1500=1, 1501=0, 1502=0)")
             
         except Exception as e:
             logger.error(f"Error signaling COMTRADE recording start: {e}")
