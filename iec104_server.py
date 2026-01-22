@@ -248,8 +248,10 @@ class IEC104Server:
             self.current_data[IOARange.FAULT_IC] = tfr.fault.current_a["C"]
             self.current_data[IOARange.FAULT_FREQ] = tfr.fault.frequency_hz
             
-            # Update status - fault is ACTIVE when fault data is loaded
-            self.current_data[IOARange.FAULT_ACTIVE] = True  # Active during fault
+            # Update status - fault is ACTIVE only during recording
+            # If recording is not active, this is historical data and fault should be cleared
+            is_recording = self.current_data.get(IOARange.COMTRADE_RECORDING_ACTIVE, False)
+            self.current_data[IOARange.FAULT_ACTIVE] = is_recording  # Active only during recording
             self.current_data[IOARange.BREAKER_POSITION] = 1  # OFF after trip
         
         # Transmit spontaneously (COT=3) to all connected clients
@@ -305,12 +307,13 @@ class IEC104Server:
             if point:
                 point.value = float(tfr.fault.current_a["C"])
             
-            # Transmit status updates - fault is now ACTIVE
+            # Transmit status updates - fault active status based on recording state
             point = self.station.get_point(IOARange.FAULT_ACTIVE)
             if point:
-                point.value = True
+                is_recording = self.current_data.get(IOARange.COMTRADE_RECORDING_ACTIVE, False)
+                point.value = is_recording
             
-            logger.info(f"Updated IEC 104 points for TFR {tfr.id} - FAULT ACTIVE")
+            logger.info(f"Updated IEC 104 points for TFR {tfr.id} - Fault Active: {self.current_data.get(IOARange.FAULT_ACTIVE, False)}")
             
         except Exception as e:
             logger.error(f"Error updating data points: {e}")

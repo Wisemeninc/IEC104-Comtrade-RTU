@@ -604,24 +604,54 @@
                 const listEl = document.getElementById('tfr-list');
                 
                 if (data.records.length === 0) {
-                    listEl.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">No fault records yet</p>';
+                    listEl.textContent = '';
+                    const emptyMsg = document.createElement('p');
+                    emptyMsg.style.color = '#6b7280';
+                    emptyMsg.style.textAlign = 'center';
+                    emptyMsg.style.padding = '20px';
+                    emptyMsg.textContent = 'No fault records yet';
+                    listEl.appendChild(emptyMsg);
                     return;
                 }
                 
-                listEl.innerHTML = data.records.map(tfr => `
-                    <div class="tfr-item" onclick="loadTfrDetails(${tfr.id}); exportComtrade(${tfr.id})">
-                        <div class="tfr-header">
-                            <span>TFR #${tfr.id}</span>
-                            <span class="badge badge-success">${tfr.status}</span>
-                        </div>
-                        <div class="tfr-meta">
-                            ${tfr.fault_type.replace(/_/g, ' ')} • ${new Date(tfr.created_at).toLocaleString()}
-                        </div>
-                        <div style="font-size: 11px; color: #f59e0b; margin-top: 4px;">
-                            💾 Click to view & export COMTRADE
-                        </div>
-                    </div>
-                `).join('');
+                // Clear existing content safely
+                listEl.textContent = '';
+                
+                // Create elements safely using DOM methods
+                data.records.forEach(tfr => {
+                    const tfrDiv = document.createElement('div');
+                    tfrDiv.className = 'tfr-item';
+                    tfrDiv.onclick = () => { loadTfrDetails(tfr.id); exportComtrade(tfr.id); };
+                    
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'tfr-header';
+                    
+                    const idSpan = document.createElement('span');
+                    idSpan.textContent = `TFR #${tfr.id}`;
+                    
+                    const statusSpan = document.createElement('span');
+                    statusSpan.className = 'badge badge-success';
+                    statusSpan.textContent = tfr.status;
+                    
+                    headerDiv.appendChild(idSpan);
+                    headerDiv.appendChild(statusSpan);
+                    
+                    const metaDiv = document.createElement('div');
+                    metaDiv.className = 'tfr-meta';
+                    metaDiv.textContent = `${tfr.fault_type.replace(/_/g, ' ')} • ${new Date(tfr.created_at).toLocaleString()}`;
+                    
+                    const exportDiv = document.createElement('div');
+                    exportDiv.style.fontSize = '11px';
+                    exportDiv.style.color = '#f59e0b';
+                    exportDiv.style.marginTop = '4px';
+                    exportDiv.textContent = '💾 Click to view & export COMTRADE';
+                    
+                    tfrDiv.appendChild(headerDiv);
+                    tfrDiv.appendChild(metaDiv);
+                    tfrDiv.appendChild(exportDiv);
+                    
+                    listEl.appendChild(tfrDiv);
+                });
                 
                 // Load the most recent TFR details if none selected
                 if (!currentTfrId && data.records.length > 0) {
