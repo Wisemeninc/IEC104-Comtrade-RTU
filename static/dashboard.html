@@ -340,6 +340,41 @@
                 </div>
             </div>
 
+            <!-- Pre-Fault Measurements -->
+            <div class="card">
+                <h2>📊 Pre-Fault Measurements (IOA 1100-1106)</h2>
+                <div class="data-table" id="pre-fault-data">
+                    <div class="data-row">
+                        <span class="data-label">Phase A Voltage</span>
+                        <span class="data-value value-voltage" id="pre-va">-- kV</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Phase B Voltage</span>
+                        <span class="data-value value-voltage" id="pre-vb">-- kV</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Phase C Voltage</span>
+                        <span class="data-value value-voltage" id="pre-vc">-- kV</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Phase A Current</span>
+                        <span class="data-value value-current" id="pre-ia">-- A</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Phase B Current</span>
+                        <span class="data-value value-current" id="pre-ib">-- A</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Phase C Current</span>
+                        <span class="data-value value-current" id="pre-ic">-- A</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Frequency</span>
+                        <span class="data-value value-frequency" id="pre-freq">-- Hz</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Fault Generator -->
             <div class="card fault-generator">
                 <h2>🔥 Fault Generator</h2>
@@ -377,41 +412,6 @@
                     <button class="btn btn-fault" onclick="generateFault('DOUBLE_LINE_TO_GROUND_CA')">
                         Double L-G CA
                     </button>
-                </div>
-            </div>
-
-            <!-- Pre-Fault Measurements -->
-            <div class="card">
-                <h2>📊 Pre-Fault Measurements (IOA 1100-1106)</h2>
-                <div class="data-table" id="pre-fault-data">
-                    <div class="data-row">
-                        <span class="data-label">Phase A Voltage</span>
-                        <span class="data-value value-voltage" id="pre-va">-- kV</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">Phase B Voltage</span>
-                        <span class="data-value value-voltage" id="pre-vb">-- kV</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">Phase C Voltage</span>
-                        <span class="data-value value-voltage" id="pre-vc">-- kV</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">Phase A Current</span>
-                        <span class="data-value value-current" id="pre-ia">-- A</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">Phase B Current</span>
-                        <span class="data-value value-current" id="pre-ib">-- A</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">Phase C Current</span>
-                        <span class="data-value value-current" id="pre-ic">-- A</span>
-                    </div>
-                    <div class="data-row">
-                        <span class="data-label">Frequency</span>
-                        <span class="data-value value-frequency" id="pre-freq">-- Hz</span>
-                    </div>
                 </div>
             </div>
 
