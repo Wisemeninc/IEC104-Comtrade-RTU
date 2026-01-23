@@ -653,7 +653,7 @@
                     
                     const metaDiv = document.createElement('div');
                     metaDiv.className = 'tfr-meta';
-                    metaDiv.textContent = `${tfr.fault_type.replace(/_/g, ' ')} • ${new Date(tfr.created_at).toLocaleString()}`;
+                    metaDiv.textContent = `${tfr.fault_type.replace(/_/g, ' ')} • ${new Date(tfr.created_at).toLocaleString('en-GB', { hour12: false })}`;
                     
                     const exportDiv = document.createElement('div');
                     exportDiv.style.fontSize = '11px';
@@ -756,7 +756,7 @@
                 }
                 
                 // Update last update time
-                document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString('en-GB', { hour12: false });
                 
             } catch (error) {
                 console.error('Error loading status:', error);

@@ -24,8 +24,9 @@ class ComtradeExporter:
         self.sample_rate = sample_rate
         self.samples_per_cycle = sample_rate // 50  # Assuming 50Hz system
         
-        # Calculate total duration and samples
-        self.duration_seconds = (tfr.duration_ms + 300) / 1000.0  # Add 150ms before + 150ms after
+        # Calculate total duration with proper pre/post-fault buffers
+        # 5s pre-fault + fault duration + 5s post-fault
+        self.duration_seconds = 5.0 + (tfr.duration_ms / 1000.0) + 5.0
         self.total_samples = int(self.duration_seconds * sample_rate)
         
         # Station and equipment info
@@ -125,9 +126,13 @@ class ComtradeExporter:
             f.write(f"1.0\n")
     
     def _write_dat_file(self, filepath: str):
-        """Write COMTRADE data file (.dat) in ASCII format"""
-        start_time = self.tfr.pre_fault.timestamp - timedelta(milliseconds=100)
+        """Write COMTRADE data file (.dat) in ASCII format with AC waveforms"""
+        import math
+        
+        # Recording starts 5 seconds before fault
+        start_time = self.tfr.fault.timestamp - timedelta(seconds=5.0)
         fault_time = self.tfr.fault.timestamp
+        fault_end_time = fault_time + timedelta(milliseconds=self.tfr.duration_ms)
         
         # Find event times
         trip_time = None
@@ -149,42 +154,86 @@ class ComtradeExporter:
                 current_time = start_time + timedelta(seconds=time_offset)
                 time_us = int(time_offset * 1e6)
                 
+                # Calculate AC waveform angle (50 Hz system)
+                angle = 2 * math.pi * 50.0 * time_offset
+                
                 # Determine phase of fault (pre-fault, during fault, post-fault)
                 if current_time < fault_time:
-                    # Pre-fault values
-                    va = self.tfr.pre_fault.voltage_kv["A"]
-                    vb = self.tfr.pre_fault.voltage_kv["B"]
-                    vc = self.tfr.pre_fault.voltage_kv["C"]
-                    ia = self.tfr.pre_fault.current_a["A"]
-                    ib = self.tfr.pre_fault.current_a["B"]
-                    ic = self.tfr.pre_fault.current_a["C"]
+                    # Pre-fault - normal AC waveforms
+                    va_rms = self.tfr.pre_fault.voltage_kv["A"]
+                    vb_rms = self.tfr.pre_fault.voltage_kv["B"]
+                    vc_rms = self.tfr.pre_fault.voltage_kv["C"]
+                    ia_rms = self.tfr.pre_fault.current_a["A"]
+                    ib_rms = self.tfr.pre_fault.current_a["B"]
+                    ic_rms = self.tfr.pre_fault.current_a["C"]
                     freq = self.tfr.pre_fault.frequency_hz
                     fault_active = 0
-                elif current_time < self.tfr.post_fault.timestamp:
-                    # During fault - interpolate between fault peak values
-                    va = self.tfr.fault.voltage_kv["A"]
-                    vb = self.tfr.fault.voltage_kv["B"]
-                    vc = self.tfr.fault.voltage_kv["C"]
-                    ia = self.tfr.fault.current_a["A"]
-                    ib = self.tfr.fault.current_a["B"]
-                    ic = self.tfr.fault.current_a["C"]
+                elif current_time < fault_end_time:
+                    # During fault - depressed voltage, high current with transient decay
+                    fault_elapsed = (current_time - fault_time).total_seconds()
+                    
+                    # Exponential decay factor for fault transient (tau = 50ms)
+                    decay = math.exp(-fault_elapsed / 0.05)
+                    
+                    # Base fault values
+                    va_base = self.tfr.fault.voltage_kv["A"]
+                    vb_base = self.tfr.fault.voltage_kv["B"]
+                    vc_base = self.tfr.fault.voltage_kv["C"]
+                    ia_base = self.tfr.fault.current_a["A"]
+                    ib_base = self.tfr.fault.current_a["B"]
+                    ic_base = self.tfr.fault.current_a["C"]
+                    
+                    # Add DC offset and transient component (decays over time)
+                    dc_offset_factor = 0.3 * decay
+                    
+                    # Voltage sag with recovery towards pre-fault
+                    va_rms = va_base + (self.tfr.pre_fault.voltage_kv["A"] - va_base) * 0.2 * (1 - decay)
+                    vb_rms = vb_base + (self.tfr.pre_fault.voltage_kv["B"] - vb_base) * 0.2 * (1 - decay)
+                    vc_rms = vc_base + (self.tfr.pre_fault.voltage_kv["C"] - vc_base) * 0.2 * (1 - decay)
+                    
+                    # Fault current with DC offset component (asymmetrical fault current)
+                    ia_rms = ia_base * (1 + dc_offset_factor)
+                    ib_rms = ib_base * (1 + dc_offset_factor)
+                    ic_rms = ic_base * (1 + dc_offset_factor)
+                    
                     freq = self.tfr.fault.frequency_hz
                     fault_active = 1
                 else:
-                    # Post-fault values
-                    va = self.tfr.post_fault.voltage_kv["A"]
-                    vb = self.tfr.post_fault.voltage_kv["B"]
-                    vc = self.tfr.post_fault.voltage_kv["C"]
-                    ia = self.tfr.post_fault.current_a["A"]
-                    ib = self.tfr.post_fault.current_a["B"]
-                    ic = self.tfr.post_fault.current_a["C"]
+                    # Post-fault - recovery values
+                    va_rms = self.tfr.post_fault.voltage_kv["A"]
+                    vb_rms = self.tfr.post_fault.voltage_kv["B"]
+                    vc_rms = self.tfr.post_fault.voltage_kv["C"]
+                    ia_rms = self.tfr.post_fault.current_a["A"]
+                    ib_rms = self.tfr.post_fault.current_a["B"]
+                    ic_rms = self.tfr.post_fault.current_a["C"]
                     freq = self.tfr.post_fault.frequency_hz
                     fault_active = 0
+                
+                # Generate AC waveforms (peak = RMS * sqrt(2))
+                # Phase A: 0°, Phase B: -120°, Phase C: +120°
+                va = va_rms * math.sqrt(2) * math.sin(angle)
+                vb = vb_rms * math.sqrt(2) * math.sin(angle - 2*math.pi/3)
+                vc = vc_rms * math.sqrt(2) * math.sin(angle + 2*math.pi/3)
+                
+                # Current with DC offset during fault (asymmetrical current)
+                if fault_active == 1:
+                    fault_elapsed = (current_time - fault_time).total_seconds()
+                    dc_component = ia_rms * 0.5 * math.exp(-fault_elapsed / 0.05)
+                    
+                    # Current with DC offset and phase shift (inductive load)
+                    ia = ia_rms * math.sqrt(2) * math.sin(angle - math.pi/6) + dc_component
+                    ib = ib_rms * math.sqrt(2) * math.sin(angle - 2*math.pi/3 - math.pi/6) + dc_component
+                    ic = ic_rms * math.sqrt(2) * math.sin(angle + 2*math.pi/3 - math.pi/6) + dc_component
+                else:
+                    # Normal current (no DC component)
+                    ia = ia_rms * math.sqrt(2) * math.sin(angle - math.pi/6)
+                    ib = ib_rms * math.sqrt(2) * math.sin(angle - 2*math.pi/3 - math.pi/6)
+                    ic = ic_rms * math.sqrt(2) * math.sin(angle + 2*math.pi/3 - math.pi/6)
                 
                 # Digital status bits
                 breaker_closed = 1 if (breaker_time is None or current_time < breaker_time) else 0
                 trip_cmd = 1 if (trip_time and current_time >= trip_time and current_time < breaker_time) else 0
-                pickup = 1 if (pickup_time and current_time >= pickup_time and current_time < self.tfr.post_fault.timestamp) else 0
+                pickup = 1 if (pickup_time and current_time >= pickup_time and current_time < fault_end_time) else 0
                 prot_armed = 1
                 
                 # Write data line: sample_num, time_us, analog_values, digital_values
